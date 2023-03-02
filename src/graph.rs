@@ -1,27 +1,35 @@
+use pyo3::types::PyDict;
 use pyo3::{exceptions::PyValueError, prelude::*};
 use std::collections::HashMap;
 
 #[pyclass]
 pub struct Graph {
-    graph: HashMap<i32, HashMap<String, i32>>,
+    graph: HashMap<String, String>,
     _node: HashMap<i32, HashMap<String, i32>>,
     _adj: HashMap<i32, HashMap<String, i32>>,
-    number_of_nodes: i32,
-    number_of_edges: i32,
-    name: String,
 }
 
 #[pymethods]
 impl Graph {
     #[new]
-    fn new() -> Self {
+    #[pyo3(signature = (**py_kwargs))]
+    fn new(py_kwargs: Option<&PyDict>) -> Self {
+        let mut g = HashMap::new();
+        if py_kwargs.is_some() {
+            for (k, v) in py_kwargs
+                .unwrap()
+                .keys()
+                .iter()
+                .zip(py_kwargs.unwrap().values().iter())
+            {
+                g.insert(format!("{}", k), format!("{}", v));
+            }
+        };
+
         Graph {
-            graph: HashMap::new(),
+            graph: g,
             _node: HashMap::new(),
             _adj: HashMap::new(),
-            number_of_nodes: 0,
-            number_of_edges: 0,
-            name: String::new(),
         }
     }
 
@@ -51,6 +59,11 @@ impl Graph {
             println!("{}: {:?}", key, value);
         }
         Ok(())
+    }
+
+    #[getter]
+    fn name(&self) -> PyResult<String> {
+        Ok(self.graph.get("name").unwrap().to_string())
     }
 
     fn __len__(&self) -> usize {
