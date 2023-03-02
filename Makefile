@@ -8,6 +8,15 @@ build:
 develop:
 	maturin develop --release
 
+run:
+	maturin build -i python3 --release && \
+	pip install .
+
+pytest:
+	maturin build -i python3 --release && \
+	pip install . && \
+	pytest
+
 fmt:
 	rustfmt src/*
 	black test/*
