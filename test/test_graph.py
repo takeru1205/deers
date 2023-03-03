@@ -21,3 +21,21 @@ def test_name():
     named_g = deers.Graph(name=name)
     named_g.add_node(1)
     assert name == named_g.name
+
+
+def test_set_name():
+    name = "test"
+    named_g = deers.Graph()
+    named_g.add_node(1)
+    named_g.name = name
+    assert name == named_g.name
+
+
+def test_update_name():
+    name = "test"
+    named_g = deers.Graph(name=name)
+    named_g.add_node(1)
+    assert name == named_g.name
+    new_name = "test_update"
+    named_g.add_node(2, name=new_name)
+    assert new_name == named_g.name
