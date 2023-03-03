@@ -33,7 +33,12 @@ impl Graph {
         }
     }
 
-    fn add_node(&mut self, node_for_adding: Option<i32>) -> PyResult<()> {
+    #[pyo3(signature = (node_for_adding, **py_kwargs))]
+    fn add_node(
+        &mut self,
+        node_for_adding: Option<i32>,
+        py_kwargs: Option<&PyDict>,
+    ) -> PyResult<()> {
         if !self._node.contains_key(&node_for_adding.unwrap()) {
             if node_for_adding.is_none() {
                 return Err(PyValueError::new_err("Value Error: None cannot be a node"));
@@ -41,19 +46,21 @@ impl Graph {
             self._adj.insert(node_for_adding.unwrap(), HashMap::new());
             self._node.insert(node_for_adding.unwrap(), HashMap::new());
         };
+
+        // update graph info
+        if py_kwargs.is_some() {
+            for (k, v) in py_kwargs
+                .unwrap()
+                .keys()
+                .iter()
+                .zip(py_kwargs.unwrap().values().iter())
+            {
+                self.graph.insert(format!("{}", k), format!("{}", v));
+            }
+        };
         Ok(())
     }
 
-    /*
-    fn __str__<'p>(&self, py: Python<'p>) -> PyResult<PyString> {
-        let mut print_statement = String::new();
-        for (key, value) in &self._node {
-            println!("{}: {:?}", key, value);
-            print_statement = print_statement + &format!("{}: {:?}", key, value);
-        }
-        Ok(PyString::new(py, &print_statement))
-    }
-    */
     fn str(&self) -> PyResult<()> {
         for (key, value) in &self._node {
             println!("{}: {:?}", key, value);
@@ -64,6 +71,12 @@ impl Graph {
     #[getter]
     fn name(&self) -> PyResult<String> {
         Ok(self.graph.get("name").unwrap().to_string())
+    }
+
+    #[setter]
+    fn set_name(&mut self, s: String) -> PyResult<()> {
+        self.graph.insert(String::from("name"), s);
+        Ok(())
     }
 
     fn __len__(&self) -> usize {
